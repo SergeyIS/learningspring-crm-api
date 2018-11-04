@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SignIn</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div class="container" style="margin-top: 10vh">
+        <fieldset style="margin-left: auto; margin-right: auto; max-width: 400px">
+            <form>
+                <div class="form-group">
+                    <label for="username">Login</label>
+                    <input id="username" v-bind:value="username" name="username" type="text" class="form-control form-control-sm">
+                </div>
+    
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" v-bind:value="password" name="password" type="password" class="form-control form-control-sm">
+                </div>
+            </form>
+            <button type="button" onclick="signIn()" class="btn btn-sm btn-block btn-light">SignIn</button>
+        </fieldset>
+    </div>
+
+    <script>
+        function signIn() {
+            $.ajax({
+                url: "/api/1.0/user/sign-in",
+                type: "post",
+                dataType: "text",
+                data: $("form").serialize(),
+                success: function(data) {
+                    localStorage.setItem("user", data);
+                    location.href = "index.html";
+                },
+                error: function(err) {
+                    console.log("Failure login service");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

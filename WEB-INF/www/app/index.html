@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>App</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/bootstrap.bundle.js"></script>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">crm-app 
+            <span class="badge badge-secondary">{{app_ver}}</span>
+        </a>
+
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                <a class="nav-link" href="#home">Home</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="#new">New</a>
+            </ul>
+            <span class="navbar-text">{{user.username}}</span>
+            <a class="btn btn-sm btn-outline btn-light" v-on:click="signOut">SignOut</a>
+            </div>
+    </nav>
+    <main style="padding-top: 80px">
+        <div class="container">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>FirstName</th>
+                        <th>LastName</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in customers" :key="index">
+                        <td>{{item.id}}</td>
+                        <td>{{item.firstName}}</td>
+                        <td>{{item.lastName}}</td>
+                        <td>{{item.email}}</td>
+                        <td>
+                            <div v-if="user.authorities.includes('ROLE_ADMIN')">
+                                <a href="#update" v-on:click="updateCustomer(item)" class="badge badge-secondary" disabled>Update</a>
+                                <a href="#drop" v-on:click="dropCustomer(item)" class="badge badge-secondary">Drop</a>    
+                            </div>
+                            <div v-else>
+                                <p>Read only</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-sm btn-block btn-light"
+            v-on:click="loadCustomers">Load more</button>
+        </div>
+    </main>
+    <footer>
+        
+    </footer>
+</div>
+
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            app_url:"http://localhost:8787",
+            app_ver: "2.0",
+            page: 0,
+            items: 10,
+            user: {},
+            customers: []
+        },
+        created: function () {
+            this.loadCustomers();
+            this.getCurrentUser();
+        },
+        methods: {
+            loadCustomers: function() {
+                try {
+                    var vm = this;
+                    $.get(vm.app_url + "/api/" + vm.app_ver + "/customer/all?page="+ vm.page +"&items=" + vm.items, function(res) {
+                        vm.customers = vm.customers.concat(res);
+                        vm.page+=vm.items;
+                    });
+                } catch(e) {
+                    console.log(e);
+                }
+            },
+            updateCustomer: function(customer) {
+                console.log(customer);
+            },
+            dropCustomer: function(customer) {
+                var vm = this;
+                $.ajax({
+                    url: "/api/" + vm.app_ver + "/customer/" + customer.id,
+                    method: "delete",
+                    success: function() {
+                        vm.customers = vm.customers.filter(function(e) {
+                            return e.id != customer.id;
+                        });
+                    }
+                });
+            },
+            getCurrentUser: function() {
+                this.user = JSON.parse(localStorage.getItem("user"));
+            },
+            signOut: function() {
+                $.get("/api/1.0/user/sign-out", function() {
+                    location.href = "sign-in.html";
+                    localStorage.clear();
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

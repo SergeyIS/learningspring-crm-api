@@ -1,0 +1,54 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.learningspring.crm.api.security"/>
+    <context:component-scan base-package="com.learningspring.crm.data"/>
+
+    <beans:bean id="passwordEncoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
+                factory-method="getInstance"/>
+
+    <http entry-point-ref="apiAuthenticationEntryPoint" use-expressions="true">
+        <intercept-url pattern="/api/*/user/sign-in" access="permitAll()"/>
+        <intercept-url pattern="/api/*/user/sign-out" access="permitAll()"/>
+        <intercept-url pattern="/api/*/user/sign-up" access="permitAll()"/>
+        <intercept-url pattern="/api/*/customer/**" method="POST" access="hasRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/api/*/customer/**" method="DELETE" access="hasRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/api/*/customer/**" method="PUT" access="hasRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/api/**" access="isAuthenticated()"/>
+
+        <csrf disabled="true"/>
+        <form-login
+                login-processing-url="/api/1.0/user/sign-in"
+                username-parameter="username"
+                password-parameter="password"
+                authentication-success-handler-ref="apiSuccessHandler"
+                authentication-failure-handler-ref="apiFailureHandler"/>
+
+        <logout logout-url="/api/1.0/user/sign-out"
+                success-handler-ref="apiSignOutSuccessHandaler"
+                delete-cookies="JSESSIONID"/>
+    </http>
+
+    <beans:bean id="apiAuthenticationEntryPoint"
+                class="com.learningspring.crm.api.security.ApiAuthenticationEntryPoint"/>
+
+    <beans:bean id="apiSuccessHandler"
+                class="com.learningspring.crm.api.security.ApiAuthenticationSuccessHandler"/>
+
+    <beans:bean id="apiFailureHandler"
+                class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler"/>
+
+    <beans:bean id="apiSignOutSuccessHandaler"
+                class="com.learningspring.crm.api.security.ApiSignOutSuccessHandaler"/>
+
+    <authentication-manager>
+        <authentication-provider user-service-ref="redisUserDetailService"/>
+    </authentication-manager>
+
+</beans:beans>

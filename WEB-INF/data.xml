@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--Jedis poll configuration-->
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="poolConfig" ref="jedisPoolConfig"/>
+        <constructor-arg name="host" value="127.0.0.1"/>
+        <constructor-arg name="port" value="6379"/>
+        <constructor-arg name="timeout" value="2000"/>
+        <!--<constructor-arg name="password" value="admin"/>-->
+    </bean>
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="128"/>
+        <property name="maxIdle" value="128"/>
+        <property name="minIdle" value="16"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="testOnReturn" value="true"/>
+        <property name="testWhileIdle"  value="true"/>
+        <property name="minEvictableIdleTimeMillis" value="#{ T(java.time.Duration).ofSeconds(60).toMillis()}"/>
+        <property name="timeBetweenEvictionRunsMillis" value="#{ T(java.time.Duration).ofSeconds(60).toMillis()}"/>
+        <property name="numTestsPerEvictionRun" value="3"/>
+        <property name="blockWhenExhausted" value="true"/>
+    </bean>
+</beans>
